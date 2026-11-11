@@ -1,0 +1,17 @@
+# 统一按 LF 存储，避免 Windows/其它平台来回改行尾导致整文件 diff
+* text=auto eol=lf
+
+# 明确标记二进制，禁止 diff/合并
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.webp  binary
+*.psd   binary
+*.glb   binary
+*.fbx   binary
+*.mp3   binary
+*.wav   binary
+*.ogg   binary
+*.ttf   binary
+*.otf   binary
+*.zip   binary

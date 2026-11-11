@@ -1,0 +1,36 @@
+# ---- Cocos Creator（工程建好后生效）----
+library/
+temp/
+local/
+build/
+profiles/
+native/
+extensions/
+
+# ---- Node / 包管理 ----
+node_modules/
+pnpm-lock.yaml
+package-lock.json
+
+# ---- 编辑器 / IDE ----
+.vscode/
+.idea/
+*.code-workspace
+
+# ---- 操作系统 ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 日志 / 临时 ----
+*.log
+*.tmp
+*.bak
+*.blend1
+
+# ---- 工具本地状态（非项目内容）----
+.dsh/
+
+# ---- 出图中间产物（定稿样张要提交，草稿不提交）----
+design/samples/_wip/
+design/samples/**/_view/

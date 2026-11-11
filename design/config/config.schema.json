@@ -1,0 +1,538 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wonder-cut.local/config.schema.json",
+  "title": "奇妙切割工坊 游戏配置",
+  "description": "唯一数值来源。代码禁止硬编码任何游戏数值；所有字段由本 schema 校验。单位：毫米(mm)、秒(s)、角度(deg)。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "coinMax",
+    "drawCost",
+    "freeDrawPerDay",
+    "maxActivePools",
+    "pointRule",
+    "voxel",
+    "pointProbs",
+    "trinketCoin",
+    "emptyCoin",
+    "camera",
+    "info",
+    "ads",
+    "pools",
+    "sets",
+    "tools",
+    "shapeRecipes"
+  ],
+  "properties": {
+    "coinMax": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "星光币上限，防数值溢出。"
+    },
+    "drawCost": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "单抽消耗星光币。节奏旋钮：内容不够就抬这个值，绝不用降低出率来拖时间。"
+    },
+    "freeDrawPerDay": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "每日免费抽次数。"
+    },
+    "maxActivePools": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "同时上架池上限。"
+    },
+
+    "pointRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["volumePerCavity", "minPoints", "maxPoints", "minSpacingMm", "minAngleDeg", "depthTiersMm"],
+      "properties": {
+        "volumePerCavity": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "每多少 mm³ 生成一个埋藏腔。N = clamp(round(volumeMm3 / volumePerCavity), minPoints, maxPoints)。"
+        },
+        "minPoints": { "type": "integer", "minimum": 1 },
+        "maxPoints": { "type": "integer", "minimum": 1 },
+        "minSpacingMm": { "type": "number", "exclusiveMinimum": 0, "description": "腔位最小间距。" },
+        "minAngleDeg": { "type": "number", "minimum": 0, "maximum": 180, "description": "腔位最小夹角。" },
+        "depthTiersMm": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["shallow", "mid", "deep", "core"],
+          "description": "按『距表面深度』分的四档阈值。shallow < mid < deep。core 固定取最大内切球位置。",
+          "properties": {
+            "shallow": { "type": "number", "exclusiveMinimum": 0 },
+            "mid": { "type": "number", "exclusiveMinimum": 0 },
+            "deep": { "type": "number", "exclusiveMinimum": 0 },
+            "core": { "type": "string", "enum": ["maxInscribed"] }
+          }
+        }
+      }
+    },
+
+    "voxel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gridNormal", "gridEpic", "gridLegend", "gridLowSpec", "chunkDivisions", "maxRebuildPerFrame", "voxelSizeMm"],
+      "properties": {
+        "gridNormal": { "type": "integer", "minimum": 16, "description": "普通/稀有坯密度场边长（体素数）。" },
+        "gridEpic": { "type": "integer", "minimum": 16, "description": "史诗坯密度场边长。" },
+        "gridLegend": { "type": "integer", "minimum": 16, "description": "传说坯密度场边长。" },
+        "gridLowSpec": { "type": "integer", "minimum": 16, "description": "低配模式降级值。" },
+        "chunkDivisions": { "type": "integer", "minimum": 2, "description": "把密度场切成几段大块；只有脏块才重算网格。" },
+        "maxRebuildPerFrame": { "type": "integer", "minimum": 1, "description": "每帧最多重建几块，超出排队到下一帧。" },
+        "voxelSizeMm": { "type": "number", "exclusiveMinimum": 0, "description": "体素边长。gridNormal^2 * voxelSizeMm 决定坯体尺寸量级。" }
+      }
+    },
+
+    "pointProbs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["core", "side"],
+      "properties": {
+        "core": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["normal", "rare", "epic", "legend"],
+          "description": "核心腔判定概率（主藏品率随稀有度递增）。",
+          "properties": {
+            "normal": { "$ref": "#/definitions/cavityProb" },
+            "rare": { "$ref": "#/definitions/cavityProb" },
+            "epic": { "$ref": "#/definitions/cavityProb" },
+            "legend": { "$ref": "#/definitions/cavityProb" }
+          }
+        },
+        "side": {
+          "$ref": "#/definitions/cavityProb",
+          "description": "小物腔判定概率；main 必须为 0。"
+        }
+      }
+    },
+
+    "trinketCoin": { "type": "integer", "minimum": 0, "description": "小物腔折算星光币。" },
+    "emptyCoin": { "type": "integer", "minimum": 1, "description": "空腔空响币，必须 ≥1（无0收益兜底）。" },
+
+    "colorVariants": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "count"],
+      "properties": {
+        "enabled": { "type": "boolean", "description": "V1.0 为 false；V1.1a 起为 true。" },
+        "count": { "type": "integer", "minimum": 1, "description": "配色变体数量；只走 shader 参数，不新增贴图。" }
+      }
+    },
+
+    "camera": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dialCount", "dialPositions", "dialFunction", "dialAxes",
+        "dialRadiusPx", "dialHotZonePx", "dialFadeAlpha",
+        "sensitivityDegPerPx", "trackOutsideCircle", "inertiaDamping",
+        "handedness", "twoFingerOrbit", "azimuthRangeDeg", "elevationClampDeg",
+        "rollLocked", "recenterEaseSec"
+      ],
+      "description": "双触控盘与相机。两盘功能完全相同，都是 2 轴自由转动；禁止 arcball，禁止双指。",
+      "properties": {
+        "dialCount": { "type": "integer", "const": 2 },
+        "dialPositions": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "string", "enum": ["bottomLeft", "bottomRight", "topLeft", "topRight"] }
+        },
+        "dialFunction": { "type": "string", "const": "identical" },
+        "dialAxes": { "type": "string", "const": "twoAxisFree" },
+        "dialRadiusPx": { "type": "number", "exclusiveMinimum": 0, "description": "视觉半径。" },
+        "dialHotZonePx": { "type": "number", "exclusiveMinimum": 0, "description": "触摸热区半径，必须 > dialRadiusPx。" },
+        "dialFadeAlpha": { "type": "number", "minimum": 0, "maximum": 1, "description": "Idle 状态透明度。" },
+        "sensitivityDegPerPx": { "type": "number", "exclusiveMinimum": 0, "description": "拖动灵敏度（度/像素）。" },
+        "trackOutsideCircle": { "type": "boolean", "const": true, "description": "必须为 true：允许拖出盘外继续转，否则最多只能转 77°，够不到 360°。" },
+        "inertiaDamping": { "type": "number", "const": 1.0, "description": "必须为 1.0：抬手即停，无惯性拖尾。" },
+        "handedness": { "type": "string", "enum": ["both", "left", "right"], "description": "利手设置：both=双盘（默认）、left=仅左、right=仅右。" },
+        "twoFingerOrbit": { "type": "boolean", "const": false, "description": "必须为 false：双指操作一律不响应。" },
+        "azimuthRangeDeg": {
+          "type": "array", "minItems": 2, "maxItems": 2,
+          "items": { "type": "number" },
+          "description": "方位角范围；[0,360] 表示不设限。"
+        },
+        "elevationClampDeg": {
+          "type": "array", "minItems": 2, "maxItems": 2,
+          "items": { "type": "number", "minimum": -90, "maximum": 90 },
+          "description": "仰角限制；推荐 [-85,85]，不翻到底朝天。"
+        },
+        "rollLocked": { "type": "boolean", "const": true, "description": "必须为 true：锁死翻滚，2 轴输入本身产生不了 roll。" },
+        "recenterEaseSec": { "type": "number", "minimum": 0, "description": "一键回正的插值时长。" }
+      }
+    },
+
+    "info": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bandCount", "bandThicknessMm", "signalRadiusMm", "signalLowFreqGain", "signalResistanceGain"],
+      "description": "信息层参数：厚度色带与结构信号。",
+      "properties": {
+        "bandCount": { "type": "integer", "minimum": 1, "description": "切面色带层数。" },
+        "bandThicknessMm": { "type": "number", "exclusiveMinimum": 0, "description": "每层色带对应的深度厚度。" },
+        "signalRadiusMm": { "type": "number", "exclusiveMinimum": 0, "description": "结构信号触发半径（距腔位）。" },
+        "signalLowFreqGain": { "type": "number", "minimum": 0, "maximum": 1, "description": "摩擦声低频增益。" },
+        "signalResistanceGain": { "type": "number", "minimum": 0, "maximum": 1, "description": "刀头阻力增益。" }
+      }
+    },
+
+    "ads": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled", "singleAdPerRound", "cooldownSec", "dailyLimitTotal",
+        "slotDailyLimit", "settleBonusPercent", "breakRecoverPercent",
+        "breakRecoverMinRounds", "noviceProtection", "firstVideoDraw",
+        "slotsEnabled", "grayPercent", "mock", "rollbackThreshold", "interstitial"
+      ],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "singleAdPerRound": { "type": "integer", "minimum": 0, "maximum": 1, "description": "单局最多激励视频次数，V1.0 固定 1。" },
+        "cooldownSec": { "type": "number", "minimum": 0, "description": "任意两次广告最小间隔。" },
+        "dailyLimitTotal": { "type": "integer", "minimum": 0, "description": "每日激励视频总上限。" },
+        "slotDailyLimit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["A_extraDraw", "B_freeDrawPlusOne", "C_settleBonus", "D_breakRecover", "E_toolEffect"],
+          "properties": {
+            "A_extraDraw": { "type": "integer", "minimum": 0 },
+            "B_freeDrawPlusOne": { "type": "integer", "minimum": 0 },
+            "C_settleBonus": { "type": "integer", "minimum": 0 },
+            "D_breakRecover": { "type": "integer", "minimum": 0 },
+            "E_toolEffect": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "settleBonusPercent": { "type": "number", "minimum": 1, "description": "位C 结算倍率，1.0 表示 ×2（额外 +100%）。" },
+        "breakRecoverPercent": { "type": "number", "minimum": 0, "maximum": 1, "description": "位D 砸碎补救后达到的比例，0.7 表示补到七成。" },
+        "breakRecoverMinRounds": { "type": "integer", "minimum": 1, "description": "位D 的局数间隔：每 N 局最多 1 次。" },
+        "noviceProtection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["noAdsFirstRounds"],
+          "properties": {
+            "noAdsFirstRounds": { "type": "integer", "minimum": 0, "description": "前 N 个已完成局不出现任何广告位，跨天不清零。" }
+          }
+        },
+        "firstVideoDraw": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "minRarity"],
+          "description": "首次视频抽保底。属于概率变更，必须在概率公示面板单独注明（合规）。",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "minRarity": { "type": "string", "enum": ["normal", "rare", "epic", "legend"] }
+          }
+        },
+        "slotsEnabled": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["A_extraDraw", "B_freeDrawPlusOne", "C_settleBonus", "D_breakRecover", "E_toolEffect"],
+          "description": "五个位的灰度开关；上线阶段 2~5『一次只加一个』靠这里切换，不改代码。",
+          "properties": {
+            "A_extraDraw": { "type": "boolean" },
+            "B_freeDrawPlusOne": { "type": "boolean" },
+            "C_settleBonus": { "type": "boolean" },
+            "D_breakRecover": { "type": "boolean" },
+            "E_toolEffect": { "type": "boolean" }
+          }
+        },
+        "grayPercent": { "type": "integer", "enum": [0, 50, 100], "description": "按用户稳定分桶（哈希 openid）决定看到广告的比例。" },
+        "mock": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "durationSec"],
+          "properties": {
+            "enabled": { "type": "boolean", "description": "未开通流量主时的本地假视频。" },
+            "durationSec": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        },
+        "rollbackThreshold": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["retentionDropPoints", "roundsDropPercent"],
+          "description": "写死的回退线，不是建议值。",
+          "properties": {
+            "retentionDropPoints": { "type": "number", "exclusiveMinimum": 0 },
+            "roundsDropPercent": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        },
+        "interstitial": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled"],
+          "properties": { "enabled": { "type": "boolean" } }
+        }
+      }
+    },
+
+    "pools": {
+      "type": "array",
+      "description": "抽卡池。同时 status=active 的池数量不得超过 maxActivePools。",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["poolId", "poolName", "poolType", "status", "openAt", "closeAt", "prob", "videoUpLegendProb", "bakeList"],
+        "properties": {
+          "poolId": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "poolName": { "type": "string", "minLength": 1 },
+          "poolType": { "type": "string", "enum": ["permanent", "seasonal"] },
+          "status": { "type": "string", "enum": ["active", "inactive"] },
+          "openAt": { "type": ["string", "null"], "description": "ISO8601 带时区；null 表示常开。" },
+          "closeAt": { "type": ["string", "null"] },
+          "prob": { "$ref": "#/definitions/rarityProb" },
+          "videoUpLegendProb": { "type": "number", "minimum": 0, "maximum": 1, "description": "激励视频抽卡时传说概率提升到。" },
+          "bakeList": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/bake" }
+          }
+        }
+      }
+    },
+
+    "sets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["setId", "setName", "book", "bakeIds", "unlockToolId", "unlockShowCase"],
+        "properties": {
+          "setId": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "setName": { "type": "string", "minLength": 1 },
+          "book": { "type": "string", "enum": ["permanent", "seasonal"] },
+          "bakeIds": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "unlockToolId": { "type": "string" },
+          "unlockShowCase": { "type": "string" }
+        }
+      }
+    },
+
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["toolId", "name", "unlock", "headRadiusMm", "carveDepthMm", "mode"],
+        "properties": {
+          "toolId": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "name": { "type": "string", "minLength": 1 },
+          "unlock": { "type": "boolean", "description": "默认是否解锁；套装集齐解锁的为 false。" },
+          "headRadiusMm": { "type": "number", "exclusiveMinimum": 0, "description": "刀头半径。决定宽扫(大)/深钻(小)。" },
+          "carveDepthMm": { "type": "number", "exclusiveMinimum": 0, "description": "单次最大削深；实际削深还会被『局部厚度×0.6』压制。" },
+          "mode": { "type": "string", "enum": ["sweep", "drill", "break"] }
+        }
+      }
+    },
+
+    "shapeRecipes": {
+      "type": "array",
+      "description": "造型配方。坯体零模型资产，几何在运行时由配方生成。",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["recipeId", "primitives", "ops", "noise", "check"],
+        "properties": {
+          "recipeId": { "type": "string", "pattern": "^recipe_[a-z0-9_]+$" },
+          "primitives": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/definitions/primitive" }
+          },
+          "ops": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/op" }
+          },
+          "noise": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["octaves", "amplitudeMm", "seed"],
+            "properties": {
+              "octaves": { "type": "integer", "minimum": 1, "maximum": 6 },
+              "amplitudeMm": { "type": "number", "minimum": 0, "maximum": 4, "description": "表面噪声幅度；推荐 0.5~2.5mm。" },
+              "seed": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "check": { "$ref": "#/definitions/shapeCheck" }
+        }
+      }
+    }
+  },
+
+  "definitions": {
+    "cavityProb": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["empty", "trinket", "main"],
+      "properties": {
+        "empty": { "type": "number", "minimum": 0, "maximum": 1 },
+        "trinket": { "type": "number", "minimum": 0, "maximum": 1 },
+        "main": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "rarityProb": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["normal", "rare", "epic", "legend"],
+      "description": "四项之和必须为 1.0（由校验脚本检查）。",
+      "properties": {
+        "normal": { "type": "number", "minimum": 0, "maximum": 1 },
+        "rare": { "type": "number", "minimum": 0, "maximum": 1 },
+        "epic": { "type": "number", "minimum": 0, "maximum": 1 },
+        "legend": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "bake": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bakeId", "bakeName", "material", "rarity", "shapeRecipe", "volumeMm3", "coreTier", "rewardFull", "rewardBreak", "hideItemId"],
+      "properties": {
+        "bakeId": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "bakeName": { "type": "string", "minLength": 1 },
+        "material": { "type": "string", "enum": ["sand", "soap", "jelly", "wax"] },
+        "rarity": { "type": "string", "enum": ["normal", "rare", "epic", "legend"] },
+        "shapeRecipe": { "type": "string", "description": "指向 shapeRecipes[].recipeId，必须存在。" },
+        "volumeMm3": { "type": "number", "exclusiveMinimum": 0, "description": "坯体体积，用于算埋藏腔数量 N。" },
+        "coreTier": { "type": "string", "enum": ["maxInscribed"], "description": "核心腔固定在最大内切球位置。" },
+        "rewardFull": { "type": "integer", "minimum": 1, "description": "全额星光币。" },
+        "rewardBreak": { "type": "integer", "minimum": 0, "description": "砸碎保底星光币，应为 rewardFull 的 30%（四舍五入）。" },
+        "hideItemId": { "type": "string", "description": "主藏品资源 id（隐藏物低模）。" }
+      }
+    },
+    "primitive": {
+      "type": "object",
+      "required": ["type"],
+      "oneOf": [
+        {
+          "properties": {
+            "type": { "const": "roundBox" },
+            "size": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "number", "exclusiveMinimum": 0 } },
+            "radius": { "type": "number", "minimum": 0 },
+            "center": { "$ref": "#/definitions/vec3" }
+          },
+          "required": ["type", "size", "radius", "center"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "sphere" },
+            "r": { "type": "number", "exclusiveMinimum": 0 },
+            "center": { "$ref": "#/definitions/vec3" }
+          },
+          "required": ["type", "r", "center"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "cylinder" },
+            "r": { "type": "number", "exclusiveMinimum": 0 },
+            "h": { "type": "number", "exclusiveMinimum": 0 },
+            "center": { "$ref": "#/definitions/vec3" }
+          },
+          "required": ["type", "r", "h", "center"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "cone" },
+            "r": { "type": "number", "exclusiveMinimum": 0 },
+            "h": { "type": "number", "exclusiveMinimum": 0 },
+            "center": { "$ref": "#/definitions/vec3" },
+            "tipRadius": { "type": "number", "minimum": 0, "description": "尖端圆化半径；禁止收成尖点。" }
+          },
+          "required": ["type", "r", "h", "center"],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "op": {
+      "type": "object",
+      "required": ["type"],
+      "oneOf": [
+        {
+          "properties": {
+            "type": { "const": "smin" },
+            "target": { "const": "all" },
+            "k": { "type": "number", "minimum": 0, "description": "平滑并集强度：k 越小越像两块，越大越像一坨。" }
+          },
+          "required": ["type", "target", "k"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "subtract" },
+            "primitive": { "$ref": "#/definitions/primitive" }
+          },
+          "required": ["type", "primitive"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "shear" },
+            "axis": { "type": "string", "enum": ["x", "y", "z"] },
+            "amount": { "type": "number" }
+          },
+          "required": ["type", "axis", "amount"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "bend" },
+            "axis": { "type": "string", "enum": ["x", "y", "z"] },
+            "amount": { "type": "number" }
+          },
+          "required": ["type", "axis", "amount"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "twist" },
+            "axis": { "type": "string", "enum": ["x", "y", "z"] },
+            "amount": { "type": "number" }
+          },
+          "required": ["type", "axis", "amount"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "scale" },
+            "factor": { "$ref": "#/definitions/vec3" }
+          },
+          "required": ["type", "factor"],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "shapeCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minLocalThicknessMm", "minNeckMm", "tipRadiusMm", "occupancy", "maxInscribedRadiusMm", "singleConnected"],
+      "description": "造型体检阈值。任何一项不过，配方不许进包。",
+      "properties": {
+        "minLocalThicknessMm": { "type": "number", "minimum": 10, "description": "最小局部厚度，硬下限 10mm（≈6 体素）。" },
+        "minNeckMm": { "type": "number", "minimum": 10, "description": "连接处最小宽度，硬下限 10mm。" },
+        "tipRadiusMm": { "type": "number", "minimum": 3, "description": "尖端圆化半径下限（约 3 体素）。" },
+        "occupancy": {
+          "type": "array", "minItems": 2, "maxItems": 2,
+          "items": { "type": "number", "minimum": 0, "maximum": 1 },
+          "description": "体素占用率区间，推荐 [0.35, 0.70]。"
+        },
+        "maxInscribedRadiusMm": { "type": "number", "minimum": 12, "description": "最大内切球半径，硬下限 12mm（否则核心腔放不下）。" },
+        "singleConnected": { "type": "boolean", "const": true, "description": "必须单连通，不许碎成多块。" }
+      }
+    },
+    "vec3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "type": "number" }
+    }
+  }
+}

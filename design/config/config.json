@@ -1,0 +1,325 @@
+{
+  "coinMax": 999,
+  "drawCost": 80,
+  "freeDrawPerDay": 1,
+  "maxActivePools": 4,
+  "pointRule": {
+    "volumePerCavity": 1200,
+    "minPoints": 1,
+    "maxPoints": 6,
+    "minSpacingMm": 8,
+    "minAngleDeg": 60,
+    "depthTiersMm": { "shallow": 8, "mid": 16, "deep": 26, "core": "maxInscribed" }
+  },
+  "voxel": {
+    "gridNormal": 40,
+    "gridEpic": 48,
+    "gridLegend": 56,
+    "gridLowSpec": 32,
+    "chunkDivisions": 6,
+    "maxRebuildPerFrame": 2,
+    "voxelSizeMm": 1.6
+  },
+  "pointProbs": {
+    "core": {
+      "normal": { "empty": 0.40, "trinket": 0.20, "main": 0.40 },
+      "rare": { "empty": 0.35, "trinket": 0.20, "main": 0.45 },
+      "epic": { "empty": 0.30, "trinket": 0.20, "main": 0.50 },
+      "legend": { "empty": 0.20, "trinket": 0.20, "main": 0.60 }
+    },
+    "side": { "empty": 0.60, "trinket": 0.40, "main": 0.00 }
+  },
+  "trinketCoin": 2,
+  "emptyCoin": 1,
+  "colorVariants": { "enabled": false, "count": 3 },
+  "camera": {
+    "dialCount": 2,
+    "dialPositions": ["bottomLeft", "bottomRight"],
+    "dialFunction": "identical",
+    "dialAxes": "twoAxisFree",
+    "dialRadiusPx": 70,
+    "dialHotZonePx": 90,
+    "dialFadeAlpha": 0.30,
+    "sensitivityDegPerPx": 0.55,
+    "trackOutsideCircle": true,
+    "inertiaDamping": 1.0,
+    "handedness": "both",
+    "twoFingerOrbit": false,
+    "azimuthRangeDeg": [0, 360],
+    "elevationClampDeg": [-85, 85],
+    "rollLocked": true,
+    "recenterEaseSec": 0.45
+  },
+  "info": {
+    "bandCount": 3,
+    "bandThicknessMm": 8,
+    "signalRadiusMm": 3,
+    "signalLowFreqGain": 0.15,
+    "signalResistanceGain": 0.10
+  },
+  "ads": {
+    "enabled": true,
+    "singleAdPerRound": 1,
+    "cooldownSec": 30,
+    "dailyLimitTotal": 12,
+    "slotDailyLimit": {
+      "A_extraDraw": 5,
+      "B_freeDrawPlusOne": 1,
+      "C_settleBonus": 3,
+      "D_breakRecover": 2,
+      "E_toolEffect": 1
+    },
+    "settleBonusPercent": 1.0,
+    "breakRecoverPercent": 0.7,
+    "breakRecoverMinRounds": 3,
+    "noviceProtection": { "noAdsFirstRounds": 3 },
+    "firstVideoDraw": { "enabled": true, "minRarity": "rare" },
+    "slotsEnabled": {
+      "A_extraDraw": true,
+      "B_freeDrawPlusOne": false,
+      "C_settleBonus": true,
+      "D_breakRecover": false,
+      "E_toolEffect": false
+    },
+    "grayPercent": 50,
+    "mock": {
+      "enabled": false,
+      "durationSec": 15
+    },
+    "rollbackThreshold": {
+      "retentionDropPoints": 5,
+      "roundsDropPercent": 10
+    },
+    "interstitial": { "enabled": false }
+  },
+  "pools": [
+    {
+      "poolId": "dessert",
+      "poolName": "甜品工坊",
+      "poolType": "permanent",
+      "status": "active",
+      "openAt": null,
+      "closeAt": null,
+      "prob": {
+        "normal": 0.45,
+        "rare": 0.30,
+        "epic": 0.20,
+        "legend": 0.05
+      },
+      "videoUpLegendProb": 0.08,
+      "bakeList": [
+        {
+          "bakeId": "peach_mound",
+          "bakeName": "蜜桃奶盖墩",
+          "material": "sand",
+          "rarity": "normal",
+          "shapeRecipe": "recipe_peach_01",
+          "volumeMm3": 6100,
+          "coreTier": "maxInscribed",
+          "rewardFull": 10,
+          "rewardBreak": 3,
+          "hideItemId": "candy_particle"
+        },
+        {
+          "bakeId": "sea_icecream",
+          "bakeName": "海盐冰淇淋球",
+          "material": "sand",
+          "rarity": "legend",
+          "shapeRecipe": "recipe_icecream_01",
+          "volumeMm3": 9800,
+          "coreTier": "maxInscribed",
+          "rewardFull": 60,
+          "rewardBreak": 18,
+          "hideItemId": "mini_cone"
+        }
+      ]
+    },
+    {
+      "poolId": "deepsea",
+      "poolName": "深海秘境",
+      "poolType": "permanent",
+      "status": "active",
+      "openAt": null,
+      "closeAt": null,
+      "prob": {
+        "normal": 0.45,
+        "rare": 0.30,
+        "epic": 0.20,
+        "legend": 0.05
+      },
+      "videoUpLegendProb": 0.08,
+      "bakeList": [
+        {
+          "bakeId": "white_sand_mound",
+          "bakeName": "浅海白沙墩",
+          "material": "sand",
+          "rarity": "normal",
+          "shapeRecipe": "recipe_white_sand_01",
+          "volumeMm3": 5800,
+          "coreTier": "maxInscribed",
+          "rewardFull": 10,
+          "rewardBreak": 3,
+          "hideItemId": "shell_crumb"
+        },
+        {
+          "bakeId": "jelly_jellyfish",
+          "bakeName": "荧光水母块",
+          "material": "jelly",
+          "rarity": "legend",
+          "shapeRecipe": "recipe_jellyfish_01",
+          "volumeMm3": 10200,
+          "coreTier": "maxInscribed",
+          "rewardFull": 65,
+          "rewardBreak": 20,
+          "hideItemId": "glow_jellyfish"
+        }
+      ]
+    },
+    {
+      "poolId": "midautumn",
+      "poolName": "中秋限定",
+      "poolType": "seasonal",
+      "status": "inactive",
+      "openAt": "2027-09-15T00:00:00+08:00",
+      "closeAt": "2027-09-30T23:59:59+08:00",
+      "prob": {
+        "normal": 0.45,
+        "rare": 0.30,
+        "epic": 0.20,
+        "legend": 0.05
+      },
+      "videoUpLegendProb": 0.08,
+      "bakeList": []
+    }
+  ],
+  "sets": [
+    {
+      "setId": "dessert_set",
+      "setName": "甜品工坊",
+      "book": "permanent",
+      "bakeIds": ["peach_mound", "matcha_mousse", "blueberry_jelly", "caramel_pudding", "strawberry_layer", "macaron_bomb", "sea_icecream", "color_pop_bowl"],
+      "unlockToolId": "cream_knife",
+      "unlockShowCase": "dessert_case"
+    }
+  ],
+  "tools": [
+    {
+      "toolId": "loop_tool",
+      "name": "环形修坯刀",
+      "unlock": true,
+      "headRadiusMm": 6,
+      "carveDepthMm": 3.5,
+      "mode": "sweep"
+    },
+    {
+      "toolId": "fine_wire",
+      "name": "细线切割器",
+      "unlock": true,
+      "headRadiusMm": 2,
+      "carveDepthMm": 7.0,
+      "mode": "drill"
+    },
+    {
+      "toolId": "cream_knife",
+      "name": "奶油花边刀",
+      "unlock": false,
+      "headRadiusMm": 6,
+      "carveDepthMm": 3.5,
+      "mode": "sweep"
+    }
+  ],
+  "shapeRecipes": [
+    {
+      "recipeId": "recipe_peach_01",
+      "primitives": [
+        { "type": "roundBox", "size": [42, 34, 40], "radius": 12, "center": [0, 0, 0] }
+      ],
+      "ops": [
+        { "type": "smin", "target": "all", "k": 6 },
+        { "type": "subtract", "primitive": { "type": "sphere", "r": 9, "center": [0, 15, 0] } }
+      ],
+      "noise": { "octaves": 2, "amplitudeMm": 1.2, "seed": 101 },
+      "check": {
+        "minLocalThicknessMm": 10,
+        "minNeckMm": 10,
+        "tipRadiusMm": 5,
+        "occupancy": [0.35, 0.7],
+        "maxInscribedRadiusMm": 12,
+        "singleConnected": true
+      }
+    },
+    {
+      "recipeId": "recipe_icecream_01",
+      "primitives": [
+        { "type": "sphere", "r": 17, "center": [0, 6, 0] },
+        { "type": "cone", "r": 9, "h": 22, "center": [0, -14, 0], "tipRadius": 5 }
+      ],
+      "ops": [{ "type": "smin", "target": "all", "k": 5 }],
+      "noise": { "octaves": 3, "amplitudeMm": 0.8, "seed": 207 },
+      "check": {
+        "minLocalThicknessMm": 10,
+        "minNeckMm": 10,
+        "tipRadiusMm": 5,
+        "occupancy": [0.35, 0.7],
+        "maxInscribedRadiusMm": 12,
+        "singleConnected": true
+      }
+    },
+    {
+      "recipeId": "recipe_treasure_01",
+      "primitives": [
+        { "type": "roundBox", "size": [42, 36, 40], "radius": 4, "center": [0, 0, 0] }
+      ],
+      "ops": [
+        { "type": "subtract", "primitive": { "type": "sphere", "r": 12, "center": [18, 12, 14] } },
+        { "type": "subtract", "primitive": { "type": "sphere", "r": 9, "center": [-16, -10, 12] } },
+        { "type": "shear", "axis": "y", "amount": 0.12 }
+      ],
+      "noise": { "octaves": 3, "amplitudeMm": 2.0, "seed": 311 },
+      "check": {
+        "minLocalThicknessMm": 10,
+        "minNeckMm": 10,
+        "tipRadiusMm": 5,
+        "occupancy": [0.35, 0.7],
+        "maxInscribedRadiusMm": 12,
+        "singleConnected": true
+      }
+    },
+    {
+      "recipeId": "recipe_white_sand_01",
+      "primitives": [
+        { "type": "roundBox", "size": [40, 32, 38], "radius": 14, "center": [0, 0, 0] }
+      ],
+      "ops": [],
+      "noise": { "octaves": 3, "amplitudeMm": 2.5, "seed": 133 },
+      "check": {
+        "minLocalThicknessMm": 10,
+        "minNeckMm": 10,
+        "tipRadiusMm": 5,
+        "occupancy": [0.35, 0.7],
+        "maxInscribedRadiusMm": 12,
+        "singleConnected": true
+      }
+    },
+    {
+      "recipeId": "recipe_jellyfish_01",
+      "primitives": [
+        { "type": "sphere", "r": 18, "center": [0, 6, 0] },
+        { "type": "cone", "r": 7, "h": 14, "center": [0, -6, 0], "tipRadius": 5 }
+      ],
+      "ops": [
+        { "type": "subtract", "primitive": { "type": "sphere", "r": 18, "center": [0, -12, 0] } },
+        { "type": "smin", "target": "all", "k": 4 }
+      ],
+      "noise": { "octaves": 2, "amplitudeMm": 1.0, "seed": 419 },
+      "check": {
+        "minLocalThicknessMm": 10,
+        "minNeckMm": 10,
+        "tipRadiusMm": 5,
+        "occupancy": [0.35, 0.7],
+        "maxInscribedRadiusMm": 12,
+        "singleConnected": true
+      }
+    }
+  ]
+}
